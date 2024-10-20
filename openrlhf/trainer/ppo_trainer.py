@@ -203,42 +203,42 @@ class PPOTrainer(ABC):
             )
 
             for rand_prompts, info in self.prompts_dataloader:
-                for _ in range(self.n_samples_per_prompt):
-                    experience = self.experience_maker.make_experience(
-                        rand_prompts, 
-                        info["weights"], 
-                        info["rewards"], 
-                        use_cache=self.n_samples_per_prompt > 1, 
-                        **self.generate_kwargs
-                    )
-                    self.replay_buffer.append(experience)
+                # for _ in range(self.n_samples_per_prompt):
+                #     experience = self.experience_maker.make_experience(
+                #         rand_prompts, 
+                #         info["weights"], 
+                #         info["rewards"], 
+                #         use_cache=self.n_samples_per_prompt > 1, 
+                #         **self.generate_kwargs
+                #     )
+                #     self.replay_buffer.append(experience)
 
                 # print prompt/answer in each update step
                 if steps % update_timesteps == 0:
-                    output = self.tokenizer.batch_decode(experience.sequences, skip_special_tokens=True)
-                    self.strategy.print(output[0])
+                    # output = self.tokenizer.batch_decode(experience.sequences, skip_special_tokens=True)
+                    # self.strategy.print(output[0])
                     global_steps = steps // update_timesteps
                     torch.cuda.empty_cache()
                     status = {}
-                    if self.kl_ctl2.value > 0:
-                        status.update(self.replay_buffer.reweight(
-                            self.strategy,
-                            self.micro_rollout_batch_size, 
-                            update_timesteps, 
-                            self.n_samples_per_prompt,
-                            beta1 = self.kl_ctl.value,
-                            beta2 = self.kl_ctl2.value,
-                        ))
-                    self.replay_buffer.normalize("advantages", self.strategy)
-                    status.update(self.ppo_train(global_steps))
-                    self.replay_buffer.clear()
-                    torch.cuda.empty_cache()
+                    # if self.kl_ctl2.value > 0:
+                    #     status.update(self.replay_buffer.reweight(
+                    #         self.strategy,
+                    #         self.micro_rollout_batch_size, 
+                    #         update_timesteps, 
+                    #         self.n_samples_per_prompt,
+                    #         beta1 = self.kl_ctl.value,
+                    #         beta2 = self.kl_ctl2.value,
+                    #     ))
+                    # self.replay_buffer.normalize("advantages", self.strategy)
+                    # status.update(self.ppo_train(global_steps))
+                    # self.replay_buffer.clear()
+                    # torch.cuda.empty_cache()
 
-                    if "kl" in status:
-                        self.kl_ctl.update(status["kl"], args.rollout_batch_size)
-                    pbar.set_postfix(status)
+                    # if "kl" in status:
+                    #     self.kl_ctl.update(status["kl"], args.rollout_batch_size)
+                    # pbar.set_postfix(status)
 
-                    # logs/checkpoints
+                    # # logs/checkpoints
                     client_states = {"consumed_samples": global_steps * args.rollout_batch_size}
                     self.save_logs_and_checkpoints(args, global_steps, pbar, eval_dataloader, status, client_states)
 
@@ -491,10 +491,10 @@ class PPOTrainer(ABC):
             args.max_ckpt_mem,
             client_states,
         )
-        self.strategy.save_ckpt(
-            self.critic, 
-            os.path.join(args.ckpt_path, "_critic"), 
-            tag, 
-            args.max_ckpt_num, 
-            args.max_ckpt_mem
-        )
+        # self.strategy.save_ckpt(
+        #     self.critic, 
+        #     os.path.join(args.ckpt_path, "_critic"), 
+        #     tag, 
+        #     args.max_ckpt_num, 
+        #     args.max_ckpt_mem
+        # )

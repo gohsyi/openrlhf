@@ -1,0 +1,32 @@
+set -xe
+
+deepspeed --include localhost:0,7 --master_port 29501 --module openrlhf.cli.read_checkpoints \
+   --n_samples_per_prompt 4 \
+   --pretrain meta-llama/Meta-Llama-3.1-8B-Instruct \
+   --reward_pretrain gohsyi/Meta-Llama-3.1-8B-Instruct-rm-ultrafeedback \
+   --save_steps 1 \
+   --ckpt_path ../models/Meta-Llama-3.1-8B-Instruct-ppo4-ultrafeedback-v0.1-ckpt \
+   --save_path ../models/Meta-Llama-3.1-8B-Instruct-ppo4-ultrafeedback-v0.1 \
+   --micro_train_batch_size 2 \
+   --train_batch_size 256 \
+   --micro_rollout_batch_size 4 \
+   --rollout_batch_size 1024 \
+   --max_epochs 1 \
+   --prompt_max_len 1024 \
+   --generate_max_len 1024 \
+   --zero_stage 2 \
+   --bf16 \
+   --actor_learning_rate 5e-7 \
+   --critic_learning_rate 9e-6 \
+   --init_kl_coef 0.01 \
+   --prompt_data gohsyi/ultrafeedback-prompt \
+   --input_key messages \
+   --apply_chat_template \
+   --normalize_reward \
+   --adam_offload \
+   --max_samples 4096 \
+   --flash_attn \
+   --gradient_checkpointing \
+   --load_checkpoint \
+   --use_wandb $WANDB_API_KEY \
+   --wandb_run_name Llama-3.1-8B-Instruct-ppo4-ultrafeedback-v0.1

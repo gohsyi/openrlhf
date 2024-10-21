@@ -11,7 +11,7 @@ import torch.nn as nn
 from tqdm import tqdm
 
 from openrlhf.models.actor import Actor
-from openrlhf.models.utils import compute_reward, masked_mean
+from openrlhf.models.utils import compute_reward, masked_mean, compute_approx_kl
 from openrlhf.utils.logging_utils import init_logger
 from openrlhf.utils.remote_rm_utils import remote_rm_fn, remote_rm_fn_ray
 
@@ -39,9 +39,9 @@ class Experience:
     weights: torch.Tensor
     sequences: torch.Tensor
     action_log_probs: torch.Tensor
-    values: torch.Tensor
-    returns: torch.Tensor
-    advantages: torch.Tensor
+    # values: torch.Tensor
+    # returns: torch.Tensor
+    # advantages: torch.Tensor
     attention_mask: Optional[torch.LongTensor]
     action_mask: Optional[torch.BoolTensor]
     info: Optional[dict]
@@ -51,9 +51,9 @@ class Experience:
         self.weights = self.weights.to(device)
         self.sequences = self.sequences.to(device)
         self.action_log_probs = self.action_log_probs.to(device)
-        self.values = self.values.to(device)
-        self.returns = self.returns.to(device)
-        self.advantages = self.advantages.to(device)
+        # self.values = self.values.to(device)
+        # self.returns = self.returns.to(device)
+        # self.advantages = self.advantages.to(device)
         if self.attention_mask is not None:
             self.attention_mask = self.attention_mask.to(device)
         if self.action_mask is not None:
@@ -63,9 +63,9 @@ class Experience:
         self.weights = self.weights.pin_memory()
         self.sequences = self.sequences.pin_memory()
         self.action_log_probs = self.action_log_probs.pin_memory()
-        self.values = self.values.pin_memory()
-        self.returns = self.returns.pin_memory()
-        self.advantages = self.advantages.pin_memory()
+        # self.values = self.values.pin_memory()
+        # self.returns = self.returns.pin_memory()
+        # self.advantages = self.advantages.pin_memory()
         if self.attention_mask is not None:
             self.attention_mask = self.attention_mask.pin_memory()
         if self.action_mask is not None:
@@ -124,9 +124,9 @@ class NaiveExperienceMaker(ABC):
         **generate_kwargs
     ) -> Experience:
         self.actor.eval()
-        self.critic.eval()
+        # self.critic.eval()
         self.initial_model.eval()
-        self.reward_model.eval()
+        # self.reward_model.eval()
 
         # generate seq
         inputs = self.tokenize_fn(prompts, self.prompt_max_len, device="cuda")
@@ -140,36 +140,42 @@ class NaiveExperienceMaker(ABC):
         base_action_log_probs = self.initial_model(sequences, num_actions, attention_mask)
 
         # values
-        value = self.critic(sequences, action_mask, attention_mask)
+        # value = self.critic(sequences, action_mask, attention_mask)
 
         # rewards
-        r = self.reward_model(sequences, attention_mask)
+        # r = self.reward_model(sequences, attention_mask)
 
-        reward, kl = compute_reward(
-            r,
-            self.kl_ctl.value,
-            action_log_probs,
-            base_action_log_probs,
-            action_mask=action_mask,
+        kl = compute_approx_kl(
+            action_log_probs, 
+            base_action_log_probs, 
+            action_mask=action_mask
         )
-        advantage, returns = self.get_advantages_and_returns(
-            value,
-            reward,
-            action_mask,
-            generate_kwargs["gamma"],
-            generate_kwargs["lambd"],
-        )
+        
+        # reward, kl = compute_reward(
+        #     r,
+        #     self.kl_ctl.value,
+        #     action_log_probs,
+        #     base_action_log_probs,
+        #     action_mask=action_mask,
+        # )
+        # advantage, returns = self.get_advantages_and_returns(
+        #     # value,
+        #     reward,
+        #     action_mask,
+        #     generate_kwargs["gamma"],
+        #     generate_kwargs["lambd"],
+        # )
 
         info = {
             "kl": masked_mean(kl, action_mask, dim=-1),
-            "reward": r,
-            "return": reward.sum(dim=-1),
+            # "reward": r,
+            # "return": reward.sum(dim=-1),
             "response_length": action_mask.float().sum(dim=-1),
             "total_length": attention_mask.float().sum(dim=-1),
         }
         # reset model state
         self.actor.train()
-        self.critic.train()
+        # self.critic.train()
 
         # weights
         weights = torch.as_tensor(weights, device="cuda").float()
@@ -178,9 +184,9 @@ class NaiveExperienceMaker(ABC):
             weights,
             sequences,
             action_log_probs,
-            value,
-            returns,
-            advantage,
+            # value,
+            # returns,
+            # advantage,
             attention_mask,
             action_mask,
             info,

@@ -32,9 +32,9 @@ class BufferItem:
     weights: torch.Tensor
     sequences: torch.Tensor
     action_log_probs: torch.Tensor
-    values: torch.Tensor
-    returns: torch.Tensor
-    advantages: torch.Tensor
+    # values: torch.Tensor
+    # returns: torch.Tensor
+    # advantages: torch.Tensor
     attention_mask: Optional[torch.LongTensor]
     action_mask: Optional[torch.BoolTensor]
     info: Optional[dict]
@@ -47,9 +47,9 @@ def split_experience_batch(experience: Experience) -> List[BufferItem]:
         "weights",
         "sequences",
         "action_log_probs",
-        "values",
-        "returns",
-        "advantages",
+        # "values",
+        # "returns",
+        # "advantages",
         "attention_mask",
         "action_mask",
     )
@@ -111,12 +111,12 @@ def make_experience_batch(items: List[BufferItem]) -> Experience:
 
 def remove_padding_in_sequences(items):
     for item in items:
-        seq, act_log_prob, value, ret, adv, att_mask, act_mask = (
+        seq, act_log_prob, att_mask, act_mask = (
             item.sequences,
             item.action_log_probs,
-            item.values,
-            item.returns,
-            item.advantages,
+            # item.values,
+            # item.returns,
+            # item.advantages,
             item.attention_mask,
             item.action_mask,
         )
@@ -128,17 +128,17 @@ def remove_padding_in_sequences(items):
         (
             item.sequences,
             item.action_log_probs,
-            item.values,
-            item.returns,
-            item.advantages,
+            # item.values,
+            # item.returns,
+            # item.advantages,
             item.attention_mask,
             item.action_mask,
         ) = (
             seq[left_pad:right_pad],
             act_log_prob[:right_pad],
-            value[:right_pad],
-            ret[:right_pad],
-            adv[:right_pad],
+            # value[:right_pad],
+            # ret[:right_pad],
+            # adv[:right_pad],
             att_mask[left_pad:right_pad],
             act_mask[:right_pad],
         )

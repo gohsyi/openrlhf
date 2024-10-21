@@ -1,0 +1,40 @@
+ray job submit --address="http://127.0.0.1:8265" \
+    -- python3 -m openrlhf.cli.train_ppo_ray \
+    --ref_num_nodes 1 \
+    --ref_num_gpus_per_node 2 \
+    --critic_num_nodes 1 \
+    --critic_num_gpus_per_node 2 \
+    --actor_num_nodes 1 \
+    --actor_num_gpus_per_node 4 \
+    --prompt_data $NAS/data/metamath-prompt \
+    --prompt_split train \
+    --input_key messages \
+    --apply_chat_template \
+    --n_samples_per_prompt 4 \
+    --pretrain $NAS/models/Meta-Llama-3.1-8B-sft-metamath \
+    --save_path $NAS/models/Meta-Llama-3.1-8B-ppo4-metamath-v0.1 \
+    --ckpt_path $NAS/models/Meta-Llama-3.1-8B-ppo4-metamath-v0.1-ckpt \
+    --load_checkpoint \
+    --max_ckpt_num 100 \
+    --logging_steps 1 \
+    --save_steps 1 \
+    --eval_steps -1 \
+    --micro_train_batch_size 1 \
+    --train_batch_size 256 \
+    --micro_rollout_batch_size 2 \
+    --rollout_batch_size 1024 \
+    --max_epochs 1 \
+    --prompt_max_len 2048 \
+    --generate_max_len 2048 \
+    --zero_stage 2 \
+    --bf16 \
+    --actor_learning_rate 5e-7 \
+    --critic_learning_rate 9e-6 \
+    --init_kl_coef 0.01 \
+    --init_kl_coef2 0.0 \
+    --actor_init_on_gpu \
+    --adam_offload \
+    --flash_attn \
+    --gradient_checkpointing \
+    --use_wandb $WANDB_API_KEY \
+    --wandb_run_name Meta-Llama-3.1-8B-ppo4-metamath-v0.1

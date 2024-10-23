@@ -87,37 +87,7 @@ def train(args):
         num_gpus_per_actor=0.75 if pg else 1,
     )
 
-    def reward_model(completions: List[str], answers: List[str]):
-        # https://github.com/meta-math/MetaMath/blob/main/eval_math.py#L22
-        from openrlhf.utils.metamath import is_equiv
-        from sympy.parsing.latex import parse_latex
-
-        if isinstance(completions, str):
-            completions, answers = [completions], [answers]
-        rewards = []
-        for completion, answer in zip(completions, answers):
-            split_ans = completion.split('The answer is: ')
-            if len(split_ans) > 1:
-                ans = split_ans[-1]
-                extract_ans_temp = ans.split('.\n')[0]
-                extract_ans_temp = extract_ans_temp.strip()
-                if len(extract_ans_temp)>0 and extract_ans_temp[-1] == '.':
-                    extract_ans = extract_ans_temp[0:-1]
-                else:
-                    extract_ans = extract_ans_temp
-                extract_ans = extract_ans.strip()
-                try:
-                    equivalent = parse_latex(r"{}".format(extract_ans)).equals(parse_latex(r"{}".format(answer)))
-                except:
-                    equivalent = is_equiv(extract_ans, answer)
-                if equivalent:
-                    reward = 1.0
-                else:
-                    reward = 0.0
-            else:
-                reward = 0.0
-            rewards.append(reward)
-        return rewards
+    from openrlhf.models.math import reward_model
 
     # init reference/reward/actor model
     refs = []
@@ -166,13 +136,6 @@ if __name__ == "__main__":
         default=False,
         help="whether to colocate reference and actor model, if true, they will share same gpus.",
     )
-    parser.add_argument(
-        "--colocate_critic_reward",
-        action="store_true",
-        default=False,
-        help="whether to colocate critic and reward model, if true, they will share same gpus.",
-    )
-
     parser.add_argument("--actor_num_nodes", type=int, default=1, help="number of nodes for actor")
     parser.add_argument("--actor_num_gpus_per_node", type=int, default=8, help="number of gpus per node for actor")
     parser.add_argument("--critic_num_nodes", type=int, default=1, help="number of nodes for critic")

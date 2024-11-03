@@ -271,7 +271,7 @@ def train(args):
         remote_rm_url=args.remote_rm_url,
     )
 
-    trainer.fit(
+    kl = trainer.fit(
         args, 
         prompts_dataloader, 
         pretrain_dataloader, 
@@ -281,11 +281,12 @@ def train(args):
     )
 
     # save model checkpoint after fitting on only rank0
-    strategy.save_model(
-        ema_model if args.enable_ema else actor,
-        tokenizer,
-        args.save_path,
-    )
+    if kl > 0.5:
+        strategy.save_model(
+            ema_model if args.enable_ema else actor,
+            tokenizer,
+            args.save_path,
+        )
 
     # if args.save_value_network:
     #     strategy.save_model(

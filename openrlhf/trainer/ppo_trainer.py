@@ -244,13 +244,15 @@ class PPOTrainer(ABC):
             self.replay_buffer.clear()
             torch.cuda.empty_cache()
 
-            # if "kl" in status:
-            #     self.kl_ctl.update(status["kl"], args.rollout_batch_size)
-            # pbar.set_postfix(status)
+            if "kl" in status:
+                self.kl_ctl.update(status["kl"], args.rollout_batch_size)
+            pbar.set_postfix(status)
 
             # logs/checkpoints
             client_states = {"consumed_samples": global_steps * args.rollout_batch_size}
             self.save_logs_and_checkpoints(args, global_steps, pbar, eval_dataloader, status, client_states)
+        
+        return status["kl"]
 
 
     def ppo_train(self, global_steps=0):

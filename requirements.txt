@@ -18,3 +18,5 @@ transformers==4.43.3
 transformers_stream_generator
 wandb
 wheel
+sympy==1.13.3
+antlr4-python3-runtime==4.11

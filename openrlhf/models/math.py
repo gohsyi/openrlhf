@@ -65,13 +65,25 @@ def list_fewshot_samples() -> list[dict]:
     ]
 
 
-def reward_model(results: Union[str, List[str]], refs: Union[str, List[str]]) -> float:
+def reward_model_math(results: Union[str, List[str]], refs: Union[str, List[str]]) -> float:
     rewards = []
     if isinstance(results, str):
         results = [results]
         refs = [refs]
     for result, ref in zip(results, refs):
         unnormalized_answer = get_unnormalized_answer(result)
+        answer = normalize_final_answer(unnormalized_answer)
+        rewards.append(float(is_equiv(answer, ref)))
+    return rewards
+
+
+def reward_model_gsm8k(results: Union[str, List[str]], refs: Union[str, List[str]]) -> float:
+    rewards = []
+    if isinstance(results, str):
+        results = [results]
+        refs = [refs]
+    for result, ref in zip(results, refs):
+        unnormalized_answer = get_unnormalized_answer_gsm8k(result)
         answer = normalize_final_answer(unnormalized_answer)
         rewards.append(float(is_equiv(answer, ref)))
     return rewards
@@ -185,7 +197,19 @@ def get_unnormalized_answer(text: str) -> str:
     end_seq = "I hope it is correct."
     text += end_seq
     match = re.search(
-        r"The answer is (.*?)",
+        r"Final Answer: The final answer is(.*?). I hope it is correct.",
+        text,
+    )
+    if match:
+        return match.group(1).strip()
+    else:
+        return INVALID_ANSWER
+
+
+def get_unnormalized_answer_gsm8k(text: str) -> str:
+    INVALID_ANSWER = "[invalidanswer]"
+    match = re.search(
+        r"The answer is (\-?[0-9\.\,]+).",
         text,
     )
     if match:

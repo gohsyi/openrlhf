@@ -67,7 +67,13 @@ def train(args):
     #     get_tokenizer(args.reward_pretrain, reward_model, "left", strategy, use_fast=not args.disable_fast_tokenizer)
     # else:
     #     reward_model = None
-    from openrlhf.models.math import reward_model
+
+    if "gsm8k" in args.prompt_data:
+        from openrlhf.models.math import reward_model_gsm8k as reward_model
+    elif "math" in args.prompt_data:
+        from openrlhf.models.math import reward_model_math as reward_model
+    else:
+        raise NotImplementedError
 
     # configure tokenizer
     tokenizer = get_tokenizer(args.pretrain, actor.model, "left", strategy, use_fast=not args.disable_fast_tokenizer)

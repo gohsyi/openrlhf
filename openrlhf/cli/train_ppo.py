@@ -271,22 +271,22 @@ def train(args):
         remote_rm_url=args.remote_rm_url,
     )
 
-    kl = trainer.fit(
-        args, 
-        prompts_dataloader, 
-        pretrain_dataloader, 
-        eval_dataloader,
-        consumed_samples, 
-        num_update_steps_per_episodes
-    )
+    # kl = trainer.fit(
+    #     args, 
+    #     prompts_dataloader, 
+    #     pretrain_dataloader, 
+    #     eval_dataloader,
+    #     consumed_samples, 
+    #     num_update_steps_per_episodes
+    # )
 
-    # save model checkpoint after fitting on only rank0
-    if kl > 0.5:
-        strategy.save_model(
-            ema_model if args.enable_ema else actor,
-            tokenizer,
-            args.save_path,
-        )
+    # # save model checkpoint after fitting on only rank0
+    # if kl > 0.5:
+    strategy.save_model(
+        ema_model if args.enable_ema else actor,
+        tokenizer,
+        args.save_path,
+    )
 
     # if args.save_value_network:
     #     strategy.save_model(

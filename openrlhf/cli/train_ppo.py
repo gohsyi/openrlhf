@@ -291,7 +291,7 @@ def train(args):
         strategy.save_model(
             critic,
             tokenizer,
-            args.save_path + "_critic",
+            args.save_path + "-critic",
         )
 
 

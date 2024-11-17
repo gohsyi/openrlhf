@@ -223,8 +223,8 @@ class NaiveReplayBuffer(ABC):
         for rews in rewards:
             max_rew = rews.max()
             weights.append(
-                torch.pow(torch.mean(torch.exp((rews - max_rew) / beta1)), beta1 / beta2) / 
-                torch.pow(torch.exp(torch.mean((rews - max_rew) / beta1)), beta1 / beta2)
+                torch.pow(torch.mean(torch.exp(rews - max_rew)), beta2) / 
+                torch.pow(torch.exp(torch.mean(rews - max_rew)), beta2)
             )
 
         weights = torch.as_tensor(weights)

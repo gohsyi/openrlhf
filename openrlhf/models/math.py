@@ -73,7 +73,7 @@ def reward_model_math(results: Union[str, List[str]], refs: Union[str, List[str]
     for result, ref in zip(results, refs):
         unnormalized_answer = get_unnormalized_answer(result)
         answer = normalize_final_answer(unnormalized_answer)
-        rewards.append(float(is_equiv(answer, ref)))
+        rewards.append(1.0 if is_equiv(answer, ref) else 0.0)
     return rewards
 
 

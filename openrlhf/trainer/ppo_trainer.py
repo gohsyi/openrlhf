@@ -419,20 +419,21 @@ class PPOTrainer(ABC):
 
     @torch.no_grad()
     def evaluate(self, eval_dataloader):
-        self.actor.eval()
-        self.reward_model.eval()
+        return {}
+        # self.actor.eval()
+        # self.reward_model.eval()
         
-        # tokenizer
-        def tokenize_fn(tokenizer, texts, max_length, device):
-            batch = tokenizer(
-                texts,
-                return_tensors="pt",
-                add_special_tokens=False,
-                max_length=max_length,
-                padding=True,
-                truncation=True,
-            )
-            return {k: v.to(device) for k, v in batch.items()}
+        # # tokenizer
+        # def tokenize_fn(tokenizer, texts, max_length, device):
+        #     batch = tokenizer(
+        #         texts,
+        #         return_tensors="pt",
+        #         add_special_tokens=False,
+        #         max_length=max_length,
+        #         padding=True,
+        #         truncation=True,
+        #     )
+        #     return {k: v.to(device) for k, v in batch.items()}
 
         pbar = tqdm(
             range(eval_dataloader.__len__()),
